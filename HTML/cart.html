@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart | Wangs</title>
+    <link rel="stylesheet" href="../CSS/cart.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Font Awesome -->
+</head>
+<body onload="updateCartCount(); loadCart();">
+    <header>
+        <div class="header-container">
+            <div class="logo-tagline">
+                <img src="../IMAGES/official_logo.png" alt="Wangs Logo" class="logo">
+                <span class="tagline">WANGS!</span>
+                <p>Spice up your life with</p>
+            </div>
+            <nav class="main-navigation">
+                <ul>
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="products.html">Shop</a></li>
+                    <div class="dropdown">
+                        <button class="dropbtn">About Us</button>
+                        <div class="dropdown-content">
+                            <a href="team.html">Team</a>
+                            <a href="store_policy.html">Store Policy</a>
+                            <a href="contact.html">Contact Us</a>
+                        </div>
+                    </div>
+                    <li><a href="signup.html"><i class="fas fa-user"></i></a></li>
+                    <li>
+                        <a href="cart.html">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span id="cart-count" class="cart-count">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="cart-container">
+        <!-- Cart Items Section -->
+        <div class="cart-items">
+            <h2 class="cart-header">My Cart</h2> <!-- Added My Cart Header -->
+            <div id="cart-items">
+                <!-- Dynamically loaded cart items will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Order Summary Section -->
+        <div class="order-summary">
+            <h2>Order Summary</h2>
+
+            <div class="summary-item">
+                <span class="label">Subtotal</span>
+                <span class="value">₱<span id="subtotal">0.00</span></span>
+            </div>
+
+            <div class="summary-item">
+                <span class="label">Delivery</span>
+                <div class="value">
+                    <select id="place-selector" onchange="updateDelivery()">
+                        <option value="150" data-place="Central Visayas, Philippines">Central Visayas - ₱150</option>
+                        <option value="200" data-place="Metro Manila">Metro Manila - ₱200</option>
+                        <option value="100" data-place="Luzon Area">Luzon Area - ₱100</option>
+                        <option value="250" data-place="Mindanao Area">Mindanao - ₱250</option>
+                    </select>
+                </div>
+                <span id="delivery-price" class="price">₱150</span>
+            </div>
+            
+
+            <hr class="summary-divider">
+
+            <div class="summary-total">
+                <span class="label">Total</span>
+                <span class="value">₱<span id="total">0.00</span></span>
+            </div>
+
+            <div class="checkout-buttons">
+                <a href="../HTML/checkOut.html">
+                <button onclick="checkout()">Checkout</button>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <center>
+        <div class="center-button">
+            <button class="clear-cart-button" onclick="clearCart()">Clear Cart</button>
+        </div>
+    </center>
+    
+    <script>
+        // Function to load cart items from localStorage and display them
+        function loadCart() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartItemsContainer = document.getElementById('cart-items');
+            let subtotal = 0;
+    
+            if (cartItemsContainer) {
+                if (cart.length > 0) {
+                    cartItemsContainer.innerHTML = cart.map((product, index) => {
+                        if (!product.name || !product.price || !product.image) {
+                            console.error("Invalid product data in cart:", product);
+                            return '';
+                        }
+    
+                        subtotal += product.price * (product.quantity || 1); // Accumulate subtotal
+                        return `
+                            <div class="cart-item">
+                                <img src="${product.image}" alt="${product.name}" class="cart-item-image">
+                                <div class="cart-item-details">
+                                    <h4>${product.name}</h4>
+                                    ${product.additionals ? `<p>Additional: ${product.additionals}</p>` : ''}
+                                    ${product.deliveryOption ? `<p>Delivery: ${product.deliveryOption}</p>` : ''}
+                                    <p class="product-price">₱${(product.price * (product.quantity || 1)).toFixed(2)}</p>
+                                </div>
+                                <div class="product-quantity">
+                                    <button onclick="changeQuantity(${index}, -1)">-</button>
+                                    <input type="text" value="${product.quantity || 1}" readonly>
+                                    <button onclick="changeQuantity(${index}, 1)">+</button>
+                                </div>
+                                <button class="remove-btn" onclick="removeFromCart(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    cartItemsContainer.innerHTML = `
+                        <div class="empty-cart">
+                            <img src="../IMAGES/noodles_yummy.png" alt="Empty Cart" style="width: 200px; height: 200px; display: block; margin: 0 auto;">
+                            <p style="text-align: center; font-weight: bold;">Hungry?</p>
+                            <p style="text-align: center;">You haven't added anything to your cart!</p>
+                        </div>
+                    `;
+                }
+            }
+    
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            updateDelivery();
+        }
+    
+        // Function to update the delivery fee and total price
+        function updateDelivery() {
+            const placeSelector = document.getElementById('place-selector');
+            const deliveryFee = parseFloat(placeSelector.value) || 0;
+            const subtotal = parseFloat(document.getElementById('subtotal').textContent) || 0;
+    
+            // Update delivery fee display
+            document.getElementById('delivery-price').textContent = `₱${deliveryFee.toFixed(2)}`;
+    
+            // Update total
+            const total = subtotal + deliveryFee;
+            document.getElementById('total').textContent = total.toFixed(2);
+    
+            // Save subtotal, delivery fee, and total to localStorage for checkout
+            localStorage.setItem('checkoutData', JSON.stringify({
+                subtotal: subtotal.toFixed(2),
+                deliveryFee: deliveryFee.toFixed(2),
+                total: total.toFixed(2)
+            }));
+        }
+    
+        // Function to change quantity of a product
+        function changeQuantity(index, change) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart[index]) {
+                cart[index].quantity = (cart[index].quantity || 1) + change;
+    
+                if (cart[index].quantity < 1) cart[index].quantity = 1;
+    
+                localStorage.setItem('cart', JSON.stringify(cart));
+                loadCart();
+            }
+        }
+    
+        // Function to remove a product from the cart
+        function removeFromCart(index) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCart();
+            updateCartCount();
+        }
+    
+        // Function to clear the cart
+        function clearCart() {
+            localStorage.removeItem('cart');
+            loadCart();
+            updateCartCount();
+        }
+    
+        // Function to update cart count in the header
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+    
+        // Ensure cart loads correctly on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            updateCartCount();
+            loadCart();
+        });
+    
+        function updateDelivery() {
+            const placeSelector = document.getElementById('place-selector');
+            const deliveryFee = parseFloat(placeSelector.value) || 0;
+            const subtotal = parseFloat(document.getElementById('subtotal').textContent) || 0;
+    
+            // Update delivery fee display
+            document.getElementById('delivery-price').textContent = `₱${deliveryFee.toFixed(2)}`;
+    
+            // Update total
+            const total = subtotal + deliveryFee;
+            document.getElementById('total').textContent = total.toFixed(2);
+    
+            // Save subtotal, delivery fee, and total to localStorage for checkout
+            localStorage.setItem('checkoutData', JSON.stringify({
+                subtotal: subtotal.toFixed(2),
+                deliveryFee: deliveryFee.toFixed(2),
+                total: total.toFixed(2)
+            }));
+        }
+    </script>
+    
+
+    <br>
+    <div class="footer">
+        <footer>
+            <p>&copy; 2024 Wangs. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="../JAVA/script.js"></script>
+</body>
+</html>

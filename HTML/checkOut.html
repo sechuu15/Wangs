@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Wangs</title>
+    <link rel="stylesheet" href="../CSS/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Font Awesome -->
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo-tagline">
+                <img src="../IMAGES/official_logo.png" alt="Wangs Logo" class="logo">
+                <span class="tagline">Secure Checkout with Wangs!</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="checkout-container">
+            <!-- Left Section -->
+            <div class="customer-details">
+                <h2>Customer Details</h2>
+                <form>
+                    <label>Email *</label>
+                    <input type="email" required>
+                    
+                    <label>First Name *</label>
+                    <input type="text" required>
+
+                    <label>Last Name *</label>
+                    <input type="text" required>
+
+                    <label>Phone *</label>
+                    <input type="tel" required>
+
+                    <label>Country/Region *</label>
+                    <select>
+                        <option>Philippines</option>
+                        <option>Other</option>
+                    </select>
+
+                    <label>Address *</label>
+                    <input type="text" required>
+
+                    <label>City *</label>
+                    <input type="text" required>
+
+                    <label>Region *</label>
+                    <input type="text" required>
+
+                    <label>Zip/Postal Code *</label>
+                    <input type="text" required>
+                </form>
+                <button type="submit" class="continue-btn" id="continue-btn">Continue</button>
+            </div>
+
+            <!-- Right Section -->
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div class="checkout-summary">
+                    <h2>Order Summary</h2>
+                    <p>Subtotal: <span id="checkout-subtotal">₱0.00</span></p>
+                    <p>Delivery Fee: <span id="checkout-delivery">₱0.00</span></p>
+                    <p><strong>Total: <span id="checkout-total">₱0.00</span></strong></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Popup -->
+    <div class="popup" id="popup">
+        <div class="popup-message">
+            <p>Your order has been processed. Please wait for the delivery update! Thank you for purchasing at WANGS!</p>
+            <button onclick="closePopup()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle the "Continue" button click and show the popup
+    document.getElementById('continue-btn').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent form submission
+        showPopup();
+    });
+
+    function showPopup() {
+        document.getElementById('popup').style.display = 'flex'; // Show the popup
+    }
+
+    function closePopup() {
+        document.getElementById('popup').style.display = 'none'; // Hide the popup
+        // Redirect to the product page after closing the popup
+        window.location.href = 'products.html'; // Change this path to the actual location of your product page
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const checkoutData = JSON.parse(localStorage.getItem('checkoutData'));
+
+    if (checkoutData) {
+        // Display values in the checkout page
+        document.getElementById('checkout-subtotal').textContent = `₱${checkoutData.subtotal}`;
+        document.getElementById('checkout-delivery').textContent = `₱${checkoutData.deliveryFee}`;
+        document.getElementById('checkout-total').textContent = `₱${checkoutData.total}`;
+    } else {
+        // Handle case where no data is available
+        document.getElementById('checkout-subtotal').textContent = '₱0.00';
+        document.getElementById('checkout-delivery').textContent = '₱0.00';
+        document.getElementById('checkout-total').textContent = '₱0.00';
+    }
+});
+
+    </script>
+
+    <div class="footer">
+        <footer>
+            <p>&copy; 2024 Wangs. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
